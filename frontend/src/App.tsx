@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import type { ViewType } from './components/Sidebar';
 import { DashboardView } from './components/views/DashboardView';
@@ -31,6 +31,18 @@ export interface BrandAsset {
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [miniChatQuery, setMiniChatQuery] = useState<string>('');
+  const [backendStatus, setBackendStatus] = useState<string>('');
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/health')
+      .then((response) => response.json())
+      .then((data) => {
+        setBackendStatus(data.status);
+      })
+      .catch(() => {
+        setBackendStatus('Backend unavailable');
+      });
+  }, []);
+
 
   // Brand Context states
   const [brandTone, setBrandTone] = useState('Professional');
@@ -103,7 +115,7 @@ const App: React.FC = () => {
 
   // Campaign callbacks
   const handleToggleCampaignStatus = (id: string) => {
-    setCampaigns(prev => prev.map(c => 
+    setCampaigns(prev => prev.map(c =>
       c.id === id ? { ...c, status: c.status === 'active' ? 'paused' : 'active' } : c
     ));
   };
@@ -187,15 +199,15 @@ const App: React.FC = () => {
         {/* Dynamic Inner Views */}
         <div className="workspace-content">
           {currentView === 'dashboard' && (
-            <DashboardView 
-              campaigns={campaigns} 
-              onViewChange={setCurrentView} 
+            <DashboardView
+              campaigns={campaigns}
+              onViewChange={setCurrentView}
               setMiniChatQuery={setMiniChatQuery}
             />
           )}
 
           {currentView === 'campaigns' && (
-            <CampaignsView 
+            <CampaignsView
               campaigns={campaigns}
               onToggleStatus={handleToggleCampaignStatus}
               onCreateCampaign={handleCreateCampaign}
@@ -208,7 +220,7 @@ const App: React.FC = () => {
           )}
 
           {currentView === 'knowledge' && (
-            <KnowledgeBaseView 
+            <KnowledgeBaseView
               assets={brandAssets}
               brandTone={brandTone}
               targetAudience={targetAudience}
@@ -219,7 +231,7 @@ const App: React.FC = () => {
           )}
 
           {currentView === 'copilot' && (
-            <AICopilotView 
+            <AICopilotView
               campaigns={campaigns}
               assets={brandAssets}
               brandTone={brandTone}
